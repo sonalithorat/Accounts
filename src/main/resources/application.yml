@@ -5,12 +5,16 @@ build:
   version: "4.0"
   
 spring:
+  application:
+    name: "accounts"
   datasource:
     url: jdbc:h2:mem:dcbapp
     driverClassName: org.h2.Driver
     username: sa
     password: password
     
+  
+     
   h2:
     console:
       enabled: true
@@ -25,16 +29,21 @@ spring:
   
   profiles:
     active: "prod"
-
-  application:
-    name: "accounts" 
-       
+      
   config:
     import: "optional:configserver:http://localhost:8071/"
-    cloud:
-     config:
-      enabled: true
-      uri: "//localhost:8071"
+    
+  rabbitmq:
+    host: "localhost"
+    port: 5672
+    username: "guest"
+    password: "guest"
+     
+rabbitmq:
+ host: "localhost"
+ port: 5672
+ username: "guest"
+ password: "guest"
       
 management:
  endpoints:
