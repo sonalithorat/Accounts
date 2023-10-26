@@ -1,11 +1,13 @@
 package com.example.accounts.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.example.accounts.clients.CardsFeignClient;
 import com.example.accounts.clients.LoanFeignClient;
 import com.example.accounts.dto.AccountsDto;
+import com.example.accounts.dto.CardsDto;
 import com.example.accounts.dto.CustomerDetailsDto;
 import com.example.accounts.dto.CustomerDto;
 import com.example.accounts.dto.LoansDto;
@@ -24,7 +26,8 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class CustomerDetailsImpl implements ICustomerService {
 
-	//here autowired is not required we are using constructor injection using @AllArgsConstructor
+	// here autowired is not required we are using constructor injection using
+	// @AllArgsConstructor
 	private LoanFeignClient loanFeignClient;
 
 	private CardsFeignClient cardsFeignClient;
@@ -34,20 +37,24 @@ public class CustomerDetailsImpl implements ICustomerService {
 	private AccountRepository accountRepository;
 
 	@Override
-	public CustomerDetailsDto fetchCustomerDetails(String mobileNumber) {
+	public CustomerDetailsDto fetchCustomerDetails(String mobileNumber, String correlationId) {
 		Customer customer = customerRepository.findByMobileNumber(mobileNumber)
 				.orElseThrow(() -> new ResourceNotFoundException("Customer", "mobileNumber", mobileNumber));
 
 		Account account = accountRepository.findByCustomerId(customer.getCustomerId()).orElseThrow(
 				() -> new ResourceNotFoundException("Account", "customerId", customer.getCustomerId().toString()));
 
-		CustomerDetailsDto customerDetailsDto = CustomerMapper
-				.mapToCustomerDetailsDto(customer,
+		CustomerDetailsDto customerDetailsDto = CustomerMapper.mapToCustomerDetailsDto(customer,
 				new CustomerDetailsDto());
 		customerDetailsDto.setAccountsDto(AccountMapper.mapTOAccountDto(account, new AccountsDto()));
-
-		customerDetailsDto.setLoansDto(loanFeignClient.fetchLoanDetails(mobileNumber).getBody());
-		customerDetailsDto.setCardsDto(cardsFeignClient.fetchCardDetails(mobileNumber).getBody());
+		ResponseEntity<LoansDto> loansEntity = loanFeignClient.fetchLoanDetails(mobileNumber, correlationId);
+		if (null != loansEntity) {
+			customerDetailsDto.setLoansDto(loansEntity.getBody());
+		}
+		ResponseEntity<CardsDto> cardsEntity = cardsFeignClient.fetchCardDetails(mobileNumber, correlationId);
+		if (null != cardsEntity) {
+			customerDetailsDto.setCardsDto(cardsEntity.getBody());
+		}
 		return customerDetailsDto;
 	}
 

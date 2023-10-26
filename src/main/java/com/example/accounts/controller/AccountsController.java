@@ -1,5 +1,7 @@
 package com.example.accounts.controller;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
@@ -22,6 +24,7 @@ import com.example.accounts.dto.CustomerDto;
 import com.example.accounts.dto.ResponseDto;
 import com.example.accounts.service.IAccountService;
 
+import io.github.resilience4j.retry.annotation.Retry;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
@@ -31,6 +34,7 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor /// as here we are using constuctor autowirring for IAccountService
 @Validated
 public class AccountsController {
+	private static final Logger logger = LoggerFactory.getLogger(AccountsController.class);
 
 	@Autowired
 	AccountConstants accountConstants;
@@ -43,6 +47,7 @@ public class AccountsController {
 
 	@GetMapping("sayHello")
 	public String Hello() {
+		System.out.println("Hello");
 		return "hi world";
 	}
 
@@ -88,17 +93,35 @@ public class AccountsController {
 
 	}
 
+	@Retry(name = "getBuildInfo",fallbackMethod = "getBuildInfoFallback")
 	@GetMapping("/build-info")
-    public ResponseEntity<String> getBuildInfo(@Value("${build.version}") String buildVersion) {
-        return ResponseEntity
-                    .status(HttpStatus.OK)
-                    .body(buildVersion);
+    public ResponseEntity<String> getBuildInfo(@Value("${accounts.message}") String buildVersion) {
+		logger.info("inside getBuildInfo method");
+		throw new NullPointerException();
+		/*
+		 * return ResponseEntity .status(HttpStatus.OK) .body(buildVersion);
+		 */
     }
 	
+	 public ResponseEntity<String> getBuildInfoFallback(Throwable throwable) 
+	 {
+		 logger.info("inside getBuildInfoFallback method");
+		 return ResponseEntity
+                 .status(HttpStatus.OK)
+                 .body("9.0");
+	 }
 	@GetMapping("/message")
     public ResponseEntity<String> getMessage(@Value("${accounts.message}") String buildVersion) {
         return ResponseEntity
                     .status(HttpStatus.OK)
                     .body(buildVersion);
+    }
+	
+	@GetMapping("/contact-info")
+    public ResponseEntity<String> getContactInfo() {
+		
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body("sonali thorat");
     }
 }
