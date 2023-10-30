@@ -1,5 +1,5 @@
 server:
-  port: 8080
+  port: 8081
   
 spring:
   application:
@@ -21,8 +21,21 @@ spring:
     openfeign:
       circuitbreaker:
         enabled: true 
-     
-
+    stream:
+      bindings:
+        updateCommunication-in-0:
+          destination: communication-sent
+          group: ${spring.application.name}
+        sendCommunication-out-0:
+          destination: send-communication 
+          
+          
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+    connection-timeout: 10s
           
 #this property is required to create table automatically using entities
     defer-datasource-initialization: true
@@ -35,9 +48,9 @@ spring:
    
 logging:
   level:
-    org:
-      hibernate:
-        SQL: debug
+    com:
+      sonali:
+        accounts: debug
         
         orm:
           jdbc:
@@ -57,12 +70,7 @@ resilience4j:
       getBuildInfo:
         max-attempts: 3
         wait-duration: 5s
-      
-#rabbitmq:
-# host: "localhost"
-# port: 5672
-# username: "guest"
-# password: "guest"
+
       
 management:
  endpoints:

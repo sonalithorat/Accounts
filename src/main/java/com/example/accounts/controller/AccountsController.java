@@ -54,7 +54,6 @@ public class AccountsController {
 	@PostMapping("/create")
 	public ResponseEntity<ResponseDto> createAccount(@Valid @RequestBody CustomerDto customerDto) {
 		iaccountService.createAccount(customerDto);
-		iaccountService.print();
 		return ResponseEntity.status(HttpStatus.CREATED.value())
 				.body(new ResponseDto(AccountConstants.MESSAGE_201, AccountConstants.MESSAGE_201));
 	}

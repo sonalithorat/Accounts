@@ -23,4 +23,5 @@ public class Account extends BaseEntity{
 	private Long accountNumber;
 	private String accountType;
 	private String branchAddress;
+	private Boolean communicationSw;
 }
